@@ -46,6 +46,14 @@ export async function POST(request: Request) {
       domain: string
     }>()
 
+    const isPermanentOption = expiryTime === 0; 
+    if (userRole === ROLES.KNIGHT && isPermanentOption) { 
+      return NextResponse.json(
+        { error: "您的当前角色无法创建永久邮箱" }, 
+        { status: 403 } 
+      );
+    }
+
     if (!EXPIRY_OPTIONS.some(option => option.value === expiryTime)) {
       return NextResponse.json(
         { error: "无效的过期时间" },
