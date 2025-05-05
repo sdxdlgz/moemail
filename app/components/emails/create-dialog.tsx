@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EXPIRY_OPTIONS } from "@/types/email"
 import { useCopy } from "@/hooks/use-copy"
 import { useConfig } from "@/hooks/use-config"
+import { useUserRole } from "@/hooks/use-user-role"  
+import { ROLES } from "@/lib/permissions"
 
 interface CreateDialogProps {
   onEmailCreated: () => void
@@ -27,6 +29,13 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
   const [expiryTime, setExpiryTime] = useState(EXPIRY_OPTIONS[1].value.toString())
   const { toast } = useToast()
   const { copyToClipboard } = useCopy()
+  const { role } = useUserRole()
+
+  const availableExpiryOptions = useMemo(() => {
+    return EXPIRY_OPTIONS.filter(
+      option => !(role === ROLES.KNIGHT && option.value === 0)
+    );
+  }, [role]);
 
   const generateRandomName = () => setEmailName(nanoid(8))
 
@@ -139,13 +148,13 @@ export function CreateDialog({ onEmailCreated }: CreateDialogProps) {
               onValueChange={setExpiryTime}
               className="flex gap-6"
             >
-              {EXPIRY_OPTIONS.map((option) => (
-                <div key={option.value} className="flex items-center gap-2">
-                  <RadioGroupItem value={option.value.toString()} id={option.value.toString()} />
-                  <Label htmlFor={option.value.toString()} className="cursor-pointer text-sm">
-                    {option.label}
-                  </Label>
-                </div>
+              {availableExpiryOptions.map((option) => (  
+                <div key={option.value} className="flex items-center gap-2">  
+                  <RadioGroupItem value={option.value.toString()} id={option.value.toString()} />  
+                  <Label htmlFor={option.value.toString()} className="cursor-pointer text-sm">  
+                    {option.label}  
+                  </Label>  
+                </div>  
               ))}
             </RadioGroup>
           </div>
